@@ -1,0 +1,13 @@
+*.pyc
+*.pyo
+*.db
+*.swp
+*.swo
+*.par
+*.cp
+*.def
+*.pf
+*.states
+*.trans
+.DS_Store
+.coverage

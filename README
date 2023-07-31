@@ -1,0 +1,8 @@
+http://eodg.atm.ox.ac.uk/RFM/
+http://eodg.atm.ox.ac.uk/RFM/fortran/
+molidx.for      in rfm source code, it matches molecule name to Hitran index
+isolst_sub.f90  in rfm5 source code, it specifies the molecular weight of isotopologue
+chkabs_sub.f90
+opnhit_sub.f90
+hitchk_sub.f90
+hflcom_dat.f90
