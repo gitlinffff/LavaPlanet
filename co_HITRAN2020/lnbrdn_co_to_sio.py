@@ -2,6 +2,8 @@ import time
 
 
 def extract_and_paste(par_file_in_1, par_file_in_2, par_file_out):
+    print('extracting data from: %s\nadding data into: %s'%(par_file_in_2,par_file_in_1))
+    
     # get the total iterations 
     with open(par_file_in_1, 'r') as infile_1:
         total_iteration = sum(1 for line in infile_1)
@@ -56,6 +58,40 @@ def extract_and_paste(par_file_in_1, par_file_in_2, par_file_out):
                             match = True
                             break
 
+            # if match failed, match again with a wavenumber difference less than 100.0
+            if match == False:
+                with open(par_file_in_2, 'r') as infile_2:
+                    for line_2 in infile_2:
+                        wvn_fetch = line_2[3:15]
+                        if abs(float(wvn_targt) - float(wvn_fetch)) <= 100.0:
+                            modified_line = line_1[:35] + line_2[35:45] + line_1[45:]
+                            outfile.write(modified_line)
+                            match = True
+                            break
+            
+            # if match failed, match again with a wavenumber difference less than 1000.0
+            if match == False:
+                with open(par_file_in_2, 'r') as infile_2:
+                    for line_2 in infile_2:
+                        wvn_fetch = line_2[3:15]
+                        if abs(float(wvn_targt) - float(wvn_fetch)) <= 1000.0:
+                            modified_line = line_1[:35] + line_2[35:45] + line_1[45:]
+                            outfile.write(modified_line)
+                            match = True
+                            break
+            
+            
+            # if match failed, match again with a wavenumber difference less than 2000.0
+            if match == False:
+                with open(par_file_in_2, 'r') as infile_2:
+                    for line_2 in infile_2:
+                        wvn_fetch = line_2[3:15]
+                        if abs(float(wvn_targt) - float(wvn_fetch)) <= 2000.0:
+                            modified_line = line_1[:35] + line_2[35:45] + line_1[45:]
+                            outfile.write(modified_line)
+                            match = True
+                            break
+
             # if match failed, write the original line without modification
             if match == False:
                 outfile.write(line_1)
@@ -71,9 +107,8 @@ def extract_and_paste(par_file_in_1, par_file_in_2, par_file_out):
 
 
 # Example usage
-input_file_1 = "28Si-16O__SiOUVenIR__100-110__296K.par"
+input_file_1 = "28Si-16O__SiOUVenIR__100-14285__296K.par"
 #input_file_1 = "test.par"
 input_file_2 = "co_HITRAN2020.par"
 output_file = "lb_" + input_file_1
 extract_and_paste(input_file_1, input_file_2, output_file)
-

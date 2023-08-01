@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+"""plot absorption cross-section """
+
 from netCDF4 import Dataset,num2date
 import matplotlib.pyplot as plt
 import numpy as np
