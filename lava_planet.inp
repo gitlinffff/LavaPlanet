@@ -1,0 +1,7 @@
+<species>
+vapor = SiO
+
+<radiation>
+infrared_bands = lava_ir.yaml
+#visible_bands = lava_vis.yaml
+#ultraviolet_bands = lava_uv.yaml
