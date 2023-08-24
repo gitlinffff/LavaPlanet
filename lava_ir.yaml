@@ -1,0 +1,58 @@
+category: infrared
+
+opacity-sources:
+  - name: H2-H2-CIA
+    long-name: "Hydrogen-Hydrogen collisional absorption"
+    model: xiz
+
+  - name: H2-He-CIA
+    long-name: "Hydrogen-Helium collisional absorption"
+    model: xiz
+
+  - name: SiO
+    long-name: "SiO line absorption"
+    dependent-species: [vapor.SiO]
+
+bands: [B1, B2, B3, B4, B5, B6]
+
+B1:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [100., 333.3]
+  resolution: 0.1
+  opacity: [SiO]
+
+B2:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [333.3, 1250.]
+  resolution: 0.1
+  opacity: [SiO]
+
+B3:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [1250., 2500.]
+  resolution: 0.1
+  opacity: [SiO]
+
+B4:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [2500., 3333.3]
+  resolution: 0.1
+  opacity: [SiO]
+
+B5:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [3333.3, 5000.]
+  resolution: 0.1
+  opacity: [SiO]
+
+B6:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [5000., 14285.7]
+  resolution: 0.1
+  opacity: [SiO]
