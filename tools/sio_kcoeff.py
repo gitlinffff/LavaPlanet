@@ -7,8 +7,12 @@ from netCDF4 import Dataset,num2date
 import matplotlib.pyplot as plt
 import numpy as np
 
+# specify input file 
+filename = "kcoeff.lava_planet-B1.nc"
+pwd = "/home/linfel/LavaPlanet/"
+kcoeff_fpath = pwd + filename
+
 # read the data
-kcoeff_fpath = "/home/linfel/LavaPlanet/kcoeff.100-200-0.01.nc"
 kcoeff_dataset = Dataset(kcoeff_fpath,'r')
 wavenumber = kcoeff_dataset.variables['Wavenumber'][:]
 pressure = kcoeff_dataset.variables['Pressure'][:]
@@ -40,7 +44,9 @@ for a in ax:
     a.set_ylabel("$\log_{10}(\mathrm{m}^2/\mathrm{molecule})$",size=15)
     a.legend(fontsize = 15,markerscale=1.5)
 
-plt.savefig('sio_kcoeff.png',dpi=300)
+
+figname = 'SiO_' + filename[-5:-3] +  '.png'
+plt.savefig(pwd + figname,dpi=300)
 plt.close()
 
 #plt.title('Spotter vs. WAVEWATCH Ⅲ',fontsize = 14)
