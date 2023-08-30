@@ -25,7 +25,7 @@ kcoeff  = f"{cmake_binary_dir}/bin/kcoeff.release"
 cktable = f"{cmake_binary_dir}/bin/cktable.py"
 
 parfile = ""
-hitfile = "/home/linfel/LavaPlanet/co_HITRAN2020/lb_28Si-16O__SiOUVenIR__100-200__296K.par"
+hitfile = "/home/linfel/LavaPlanet/co_HITRAN2020/lb_28Si-16O__SiOUVenIR__100-14285__296K.par"
 
 base_name = os.path.basename(args['input'])
 path_name = os.path.dirname(args['input'])

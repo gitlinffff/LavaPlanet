@@ -47,6 +47,7 @@ for i in range(6):
     ax[2].plot(x,y3, linewidth=1,label=str(round(pressure[79])) + ' Pa')
 
 for a in ax:
+    
     a.set_xscale('log')  # use a logarithmic scale for the x-axis
     a.tick_params(axis='both', which='major', labelsize=15)
     a.set_xlabel("wavelength (\u03BCm)",size=15)
@@ -54,7 +55,7 @@ for a in ax:
     a.legend(fontsize = 15,markerscale=1.5)
 
 
-figname = 'SiO_multibands.png'
+figname = 'SiO_multibands_0-10um.png'
 plt.savefig(pwd + figname,dpi=300)
 plt.close()
 
