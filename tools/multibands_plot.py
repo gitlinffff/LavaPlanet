@@ -13,7 +13,7 @@ fig, ax = plt.subplots(3, 1, figsize=(10, 18))
 avo = 6.02214076e23
 
 
-for i in range(6):
+for i in range(7):
 
     # specify input file 
     filename = "kcoeff.lava_planet-B" + str(i+1) + ".nc"
@@ -46,9 +46,12 @@ for i in range(6):
     ax[1].plot(x,y2, linewidth=1,label=str(round(pressure[39])) + ' Pa')
     ax[2].plot(x,y3, linewidth=1,label=str(round(pressure[79])) + ' Pa')
 
+# set range of x-axis
+x_range = (12,12.5)
+
 for a in ax:
    
-    a.set_xlim(1.63,1.67)   # Limit the x-axis range
+    a.set_xlim(x_range[0],x_range[1])   # Limit the x-axis range
     #a.set_xscale('log')  # use a logarithmic scale for the x-axis
     a.tick_params(axis='both', which='major', labelsize=15)
     a.set_xlabel("wavelength (\u03BCm)",size=15)
@@ -56,8 +59,6 @@ for a in ax:
     a.legend(fontsize = 15,markerscale=1.5)
 
 
-figname = 'SiO_multibands_1.63-1.67um.png'
+figname = 'SiO_multibands_' + str(x_range[0]) + '-' + str(x_range[1]) + 'um.png'
 plt.savefig(pwd + 'images/' + figname,dpi=300)
 plt.close()
-
-#plt.title('Spotter vs. WAVEWATCH Ⅲ',fontsize = 14)
