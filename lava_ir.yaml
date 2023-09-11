@@ -18,14 +18,14 @@ bands: [B1, B2, B3, B4, B5, B6, B7]
 B1:
   rt-solver: Disort
   unit: cm-1
-  wavenumber-range: [100., 270.]
+  wavenumber-range: [100., 250.]
   resolution: 0.1
   opacity: [SiO]
 
 B2:
   rt-solver: Disort
   unit: cm-1
-  wavenumber-range: [625., 1340.]
+  wavenumber-range: [810., 1340.]
   resolution: 0.1
   opacity: [SiO]
 

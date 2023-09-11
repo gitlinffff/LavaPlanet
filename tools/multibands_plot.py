@@ -47,18 +47,19 @@ for i in range(7):
     ax[2].plot(x,y3, linewidth=1,label=str(round(pressure[79])) + ' Pa')
 
 # set range of x-axis
-x_range = (12,12.5)
+#x_range = (12,12.5)
 
 for a in ax:
    
-    a.set_xlim(x_range[0],x_range[1])   # Limit the x-axis range
-    #a.set_xscale('log')  # use a logarithmic scale for the x-axis
+    #a.set_xlim(x_range[0],x_range[1])   # Limit the x-axis range
+    a.set_xscale('log')  # use a logarithmic scale for the x-axis
     a.tick_params(axis='both', which='major', labelsize=15)
     a.set_xlabel("wavelength (\u03BCm)",size=15)
     a.set_ylabel("$\log_{10}(\mathrm{m}^2/\mathrm{molecule})$",size=15)
     a.legend(fontsize = 15,markerscale=1.5)
 
 
-figname = 'SiO_multibands_' + str(x_range[0]) + '-' + str(x_range[1]) + 'um.png'
+#figname = 'SiO_multibands_' + str(x_range[0]) + '-' + str(x_range[1]) + 'um.png'
+figname = 'SiO_multibands.png'
 plt.savefig(pwd + 'images/' + figname,dpi=300)
 plt.close()
