@@ -3,7 +3,7 @@
 
 """plot absorption cross-section """
 
-from netCDF4 import Dataset,num2date
+from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import numpy as np
 
