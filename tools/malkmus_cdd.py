@@ -13,10 +13,13 @@ def g_malkmus(k,B,S):
     return cdd
 
 # generate an uneven list of independent variable
-def generate_k_list(low_limit,up_limit):
+def generate_uneven_seq(low_limit,up_limit,step_order):
+    """ example:
+        generate_uneven_seq(0,2,1):   [1, 1.1, 1.2, 1.3, 1.4,..., 9.9, 10, 11, 12, 13, 14,..., 99]
+        generate_uneven_seq(-1,1,2):  [0.1, 0.101, 0.102, 0.103,..., 0.999, 1, 1.01, 1.02, 1.03,..., 9.99]
+    """
     i = low_limit
     k_list = []
-    step_order = 3   # step relative to the range that it belongs to
     while i<up_limit:
         list_i = list(np.arange(10**i, 10**(i+1), 10**(i-step_order)))
         k_list = k_list + list_i
@@ -38,39 +41,68 @@ molwt = 0.0440849 # molecular weight of SiO  0.0440849 kg/mol
 ck_k = np.exp(ck_k_raw)/1000/molwt
 log_ck_k = np.log10(ck_k)
 
-# built the cumulative density distribution function of Malkmus model
-k_model = generate_k_list(np.floor(log_ck_k.min()),np.ceil(log_ck_k.max()))
-B = 1e-7
-S = 1.0
-g_model = [g_malkmus(ki,B,S) for ki in k_model]
+# build a series of cumulative density distribution functions of Malkmus model using different S and B parameters to determine the optimal B and S
+k_model = generate_uneven_seq(np.floor(log_ck_k.min())-1,np.ceil(log_ck_k.max())+4,3)
+B_list = generate_uneven_seq(-6,-4,0)#; B_list.reverse()
+S_list = generate_uneven_seq(-3,-1,0)#; S_list.reverse()
 
-# calculate the sum of squares of errors (SSE)
-SSE = 0
-for i in range(len(ck_g)):
-    g = ck_g[i]
-    k_obsr = ck_k[i]
+SSE_min = 10e20
+B_optm = 0
+S_optm = 0
 
-    # get the Malkmus k value based on the given g value 
-    for j in range(len(g_model)-1):
-        if (g - g_model[j]) * (g - g_model[j+1]) <= 0:
-            k_pred = k_model[j+1]
-            break
-        #if ((g - g_model[j]) > 0) & ((g - g_model[j+1]) > 0):
-        #    print('g_model is invalid')
+iteration = len(B_list)*len(S_list); ite = 0  # total number of iterations
+for B in B_list:
+    for S in S_list:
+        ite += 1
+        print('B %.10f  S %.10f, B_optm %.10f  S_optm %.10f  SSE_min %f,  progress %.2f%%'%(B,S,B_optm,S_optm,SSE_min,ite/iteration*100))
+        
+        try_next_parameter = False  # Initialize it as False. It might be set as True in the following codes in some conditions.
+        g_model = [g_malkmus(ki,B,S) for ki in k_model]
+        # check the model
+        if ck_g.max() > max(g_model): print("ck_g.max() > max(g_model)")
+        if ck_g.min() < min(g_model): print("ck_g.min() < min(g_model)")
 
-    SSE = SSE + (k_obsr - k_pred)**2
+        # calculate the sum of squares of errors (SSE)
+        SSE = 0
+        for i in range(len(ck_g)):
+            g = ck_g[i]
+            k_obsr = ck_k[i]
+            # get the Malkmus k value based on the given g value 
+            k_pred = ''
+            for j in range(len(g_model)-1):
+                if (g - g_model[j]) * (g - g_model[j+1]) <= 0:
+                    k_pred = k_model[j+1]
+                    break
+            if k_pred != '':
+                SSE = SSE + (k_obsr - k_pred)**2
+            else:
+                try_next_parameter = True # Set it True when k_pred cannot be found due to inappropriate B or S value.
+                break
+
+        if try_next_parameter == False:
+            if SSE < SSE_min:
+                SSE_min = SSE; B_optm = B; S_optm = S
+        else:
+            continue
+
+# get the optimal cumulative density distribution functions of Malkmus model
+g_optm_model = [g_malkmus(ki,B_optm,S_optm) for ki in k_model]
+print('# optimal B: %.10f   optimal S: %.6f'%(B_optm,S_optm))
 
 # create the plot
+print('creating the plot ...')
 fig, ax = plt.subplots(1, 1, figsize=(10, 6))
-ax.plot(g_model,k_model, linewidth=0.5)                           # plot Malkmus model k-g curve
-ax.plot(ck_g, ck_k, marker='o', markersize=1, linestyle='None')   # plot cktable points
+ax.plot(g_optm_model,k_model, linewidth=0.5)                           # plot optimal Malkmus model k-g curve
+ax.plot(ck_g, ck_k, marker='o', markersize=1, linestyle='None')        # plot cktable points
 
 ax.set_yscale('log')    # use a logarithmic scale for the x-axis
 ax.tick_params(axis='both', which='major', labelsize=15)
 ax.set_xlabel("g",size=15)
 ax.set_ylabel("k(g)",size=15)
-plt.title('SSE %f'%SSE,fontsize=15)
+plt.title('SSE %f optimal B: %.10f optimal S: %.6f'%(SSE_min,B_optm,S_optm),fontsize=15)
 #ax.legend(fontsize = 15,markerscale=1.5)
 
 output_fig = 'images/test5.png'
 plt.savefig(pwd+output_fig,dpi=300)
+
+print('Completed')
