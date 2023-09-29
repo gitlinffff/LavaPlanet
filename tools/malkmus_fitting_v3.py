@@ -28,22 +28,39 @@ def generate_uneven_seq(low_limit,up_limit,step_order):
         i += 1
     return k_list
 
+#
+def approach_prediction_value(g_o,k_o,B,S):
+    g_error_thres = 1e-4
+    k_step = 1.0 
+    k_p = k_o
+    g_1 = g_malkmus(k_p,B,S)
+    error_before = g_1 - g_o
+
+    while abs(error_before) > g_error_thres:
+        k_p = 10**(np.log10(k_p) + k_step)
+        g_1 = g_malkmus(k_p,B,S)
+        error_now = g_1 - g_o
+
+        if error_before * error_now < 0:
+            k_step = k_step * (-0.5)
+        if (error_before * error_now > 0) & (abs(error_before) <= abs(error_now)):
+            k_step = k_step * (-2.0)
+
+        error_before = error_now
+
+    return k_p
+
 # calculate the sum of squares of errors (SSE)
-def calculate_SSE(x_obs,y_obs,x_model,y_model):
-    j_key = 0
-    y_pred = []
-    for i in range(len(x_obs)):
-        x = x_obs[i]
-        # get the Malkmus k value based on the given g value 
-        for j in range(j_key,len(x_model)-1):
-            if (x - x_model[j]) * (x - x_model[j+1]) <= 0:
-                y_pred.append(y_model[j+1])
-                j_key = j
-                break
-    #print(len(y_pred),len(y_obs))
-    assert len(y_pred) == len(y_obs), f"lengths of y_pred and y_obs not equal" 
-    SSE = np.sum((y_pred - y_obs)**2)
-    
+def calculate_SSE(g_obs,k_obs,B,S):
+    k_pred = []
+    for i in range(len(g_obs)):
+        g_o = g_obs[i]
+        k_o = k_obs[i]
+        k_p = approach_prediction_value(g_o,k_o,B,S)
+        k_pred.append(k_p)
+    #print(len(k_pred),len(k_obs))
+    assert len(k_pred) == len(k_obs), f"lengths of y_pred and y_obs not equal" 
+    SSE = np.sum((np.log10(k_pred) - np.log10(k_obs))**2)
     return SSE
 
 def get_n_neighbors(n,l,x0,y0):
@@ -71,8 +88,6 @@ ck_k = np.exp(ck_k_raw)/1000/molwt
 log_ck_k = np.log10(ck_k)
 
 # build a series of cumulative density distribution functions of Malkmus model using different S and B parameters to determine the optimal B and S
-k_model = generate_uneven_seq(np.floor(log_ck_k.min())-1,np.ceil(log_ck_k.max())+4,3)
-log_k_model = np.log10(k_model)
 
 # open a file to export (B,S,SSE)
 outfname = "outputs/B1_BS_SSE.csv"
@@ -80,29 +95,24 @@ outfile = open(pwd+outfname, 'w')
 outfile.writelines(f"B,S,SSE\n")
 
 # search best model that can minimize SSE
-B_iterate = 6.0041e-03         # set the initial value of B when gradient descend starts 
-S_iterate = 6.3089e1         # set the initial value of S when gradient descend starts
-SSE_min = calculate_SSE(ck_g,log_ck_k,[g_malkmus(ki,B_iterate,S_iterate) for ki in k_model],k_model)
+B_iterate = 1e-4         # set the initial value of B when gradient descend starts 
+S_iterate = 1e1         # set the initial value of S when gradient descend starts
+SSE_min = calculate_SSE(ck_g,ck_k,B_iterate,S_iterate)
 SSE_now = SSE_min       # SSE at the central (B,S) location in each iteration
-num_nbr = 25            # set the number of directions for searching largest descend
+num_nbr = 60            # set the number of directions for searching largest descend
 step = 1e-1             # set the step length for each moving
 diff = 1e10             # difference in SSE between two successive iterations
-threshold = 1e-4        # stop iteration if the difference in SSE between two successive iterations falls below this threshold
+threshold = 1e-6        # stop iteration if the difference in SSE between two successive iterations falls below this threshold
 num_loop = 0            # used for keeping recording how many iterations has completed
 
 while diff > threshold:
     count = 0
     for B,S in get_n_neighbors(num_nbr,step,B_iterate,S_iterate):
-        g_model = [g_malkmus(ki,B,S) for ki in k_model]
         # check the model
-        #if num_loop == 250:
-        #    #print(ck_g.max(),max(g_model),ck_g.min(),min(g_model))
-        #    print(f"B: {B:.5e}  S: {S:.5e}")
-
-        if (ck_g.max() > max(g_model))|(ck_g.min() < min(g_model)): 
+        if g_malkmus(10**np.ceil(np.log10(ck_k.max())),B,S) <= 0.95:
             continue
         
-        SSE_i = calculate_SSE(ck_g,log_ck_k,g_model,log_k_model)
+        SSE_i = calculate_SSE(ck_g,ck_k,B,S)
 
         if SSE_i <= SSE_min:
             SSE_min = SSE_i; B_iterate = B; S_iterate = S
@@ -124,6 +134,7 @@ outfile.close()
 print("# gradient descent track saved  %s"%(pwd+outfname))
 
 # get the optimal cumulative density distribution functions of Malkmus model
+k_model = generate_uneven_seq(np.floor(log_ck_k.min())-1,np.ceil(log_ck_k.max())+4,3)
 g_optm_model = [g_malkmus(ki,B_iterate,S_iterate) for ki in k_model]
 
 # create the plot
