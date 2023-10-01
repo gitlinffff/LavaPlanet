@@ -35,9 +35,8 @@ def approach_prediction_value(g_o,k_o,B,S):
     k_p = k_o
     g_1 = g_malkmus(k_p,B,S)
     error_before = g_1 - g_o
-    print(k_step)
 
-    while abs(error_before) > g_error_thres:
+    while (abs(error_before) > g_error_thres) & (abs(k_step) > 1e-12):
         k_p = 10**(np.log10(k_p) + k_step)
         g_1 = g_malkmus(k_p,B,S)
         error_now = g_1 - g_o
@@ -46,7 +45,7 @@ def approach_prediction_value(g_o,k_o,B,S):
             k_step = k_step * (-0.5)
         if (error_before * error_now > 0) & (abs(error_before) <= abs(error_now)):
             k_step = k_step * (-2)
-        print(k_step)
+        
         error_before = error_now
 
     return k_p
@@ -58,7 +57,6 @@ def ln_likelihood(params,g_obs,k_obs):
     for i in range(len(g_obs)):
         g_o = g_obs[i]
         k_o = k_obs[i]
-        print("==========================================")
         k_p = approach_prediction_value(g_o,k_o,B,S)
         k_pred.append(k_p)
     assert len(k_pred) == len(k_obs), f"lengths of k_pred and k_obs not equal"
@@ -68,7 +66,7 @@ def ln_likelihood(params,g_obs,k_obs):
 # define the prior function
 def ln_prior(log_params):
     logB,logS = log_params
-    if (logB < -10) or (logB > 1) or (logS < -5) or (logS > 5):
+    if (logB < -10) or (logB > 0) or (logS < -5) or (logS > 5):  # It is not good for logB to be larger than 0
         return -np.inf
     return 0.0
 
