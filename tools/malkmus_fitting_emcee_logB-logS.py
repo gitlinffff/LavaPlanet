@@ -80,7 +80,8 @@ def ln_posterior(log_params, x, y):
 
 
 # specify input file
-filename = "cktable.lava_planet-B3.nc"
+filenum = '5'
+filename = "cktable.lava_planet-B"+filenum+".nc"
 pwd = "/home/linfel/LavaPlanet/"
 cktable_fpath = pwd + filename
 print(f"# working on {cktable_fpath}")
@@ -97,22 +98,23 @@ log_ck_k = np.log10(ck_k)
 
 # set the initial guess
 ndim = 2  # Number of parameters (logB, logS)
-nwalkers = 10  # Number of walkers (chains)
-initial_logB_guess = -2
-initial_logS_guess = -1
+nwalkers = 20  # Number of walkers (chains)
+initial_logB_guess = -2.0
+initial_logS_guess = -5.0
 starting_guess = np.array([initial_logB_guess, initial_logS_guess])  # Provide your initial guesses
 p0 = np.random.randn(nwalkers, ndim) * 0.1+ starting_guess       # np.random.randn:  used to generate random number in standard normal distribution
+print(f"# initial parameters [logB,logS]: {starting_guess}")
 
 # Run the MCMC Sampler
 sampler = emcee.EnsembleSampler(nwalkers, ndim, ln_posterior, args=(ck_g, ck_k))
-n_steps = 3000
+n_steps = 5000
 sampler.run_mcmc(p0, n_steps, progress=True)
 
 # final results
 samples = sampler.chain[:, :, :].reshape((-1, ndim))
 optm_params = np.median(samples, axis=0)
 parameter_stddevs = np.std(samples, axis=0)
-optm_SSE = -2*ln_likelihood(10**optm_params,ck_g, ck_k)
+optm_SSE = -2.0*ln_likelihood(10.0**optm_params,ck_g, ck_k)
 print(f"# optimal parameters [logB,logS]: {optm_params}")
 print(f"# SSE at the optimal parameters: {optm_SSE}")
 print(f"# parameters stddevs: {parameter_stddevs}")
@@ -126,13 +128,13 @@ except:
     
 # get flat samples to make corner plot for the MCMC results
 print('# creating the corner plot for MCMC ...')
-flat_samples = sampler.get_chain(discard=200,thin=20,flat=True)
+flat_samples = sampler.get_chain(discard=1000,thin=10,flat=True)
 # discard: discard the first 200 steps in the chain
 # thin: take only every thin steps from the chain.
 # flat: flatten the chain across the ensemble
 print(f"# (samples,dimension): {flat_samples.shape}")
 fig_cornerplot = corner.corner(flat_samples, labels=["logB","logS"])
-output_fig1 = "images/test3_corner.png"
+output_fig1 = 'images/test'+filenum+'_corner.png'
 fig_cornerplot.savefig(pwd+output_fig1,dpi=300)
 print('# image saved  %s'%(pwd+output_fig1))
 
@@ -153,7 +155,7 @@ ax.set_xlabel("g",size=15)
 ax.set_ylabel("k(g)",size=15)
 plt.title(f"SSE: {optm_SSE}\noptimal B: {optm_B:.4e}\noptimal S: {optm_S:.4e}",fontsize=8)
 #ax.legend(fontsize = 15,markerscale=1.5)
-output_fig2 = 'images/test3_model_fitting.png'
+output_fig2 = 'images/test'+filenum+'_model_fitting.png'
 plt.savefig(pwd+output_fig2,dpi=300)
 print('# image saved  %s'%(pwd+output_fig2))
 
