@@ -1,3 +1,5 @@
+# method: MCMC, emcee, using error of log(k) to calculate SSE
+
 from netCDF4 import Dataset
 import math
 import numpy as np
