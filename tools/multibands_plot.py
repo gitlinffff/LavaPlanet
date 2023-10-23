@@ -37,14 +37,14 @@ for i in range(7):
     kcoeff_MID = SiO_masked[:,39,1]
     kcoeff_BOT = SiO_masked[:,79,1]
 
-    x = 1/wavenumber*10**4
+    x = 10000.0/wavenumber
     y1 = np.log10(np.exp(kcoeff_TOA)/1000/avo)
     y2 = np.log10(np.exp(kcoeff_MID)/1000/avo)
     y3 = np.log10(np.exp(kcoeff_BOT)/1000/avo)
 
-    ax[0].plot(x,y1, linewidth=1,label=str(round(pressure[0])) + ' Pa')
-    ax[1].plot(x,y2, linewidth=1,label=str(round(pressure[39])) + ' Pa')
-    ax[2].plot(x,y3, linewidth=1,label=str(round(pressure[79])) + ' Pa')
+    ax[0].plot(x,y1, linewidth=1)
+    ax[1].plot(x,y2, linewidth=1)
+    ax[2].plot(x,y3, linewidth=1)
 
 # set range of x-axis
 #x_range = (12,12.5)
@@ -55,9 +55,13 @@ for a in ax:
     a.set_xscale('log')  # use a logarithmic scale for the x-axis
     a.tick_params(axis='both', which='major', labelsize=15)
     a.set_xlabel("wavelength (\u03BCm)",size=15)
-    a.set_ylabel("$\log_{10}(\mathrm{m}^2/\mathrm{molecule})$",size=15)
-    a.legend(fontsize = 15,markerscale=1.5)
+    a.set_ylabel("$absorption~coefficient~\log_{10}(\mathrm{m}^2/\mathrm{molecule})$",size=15)
 
+ax[0].set_title(f"{str(round(pressure[0]))} Pa",size=15)
+ax[1].set_title(f"{str(round(pressure[39]))} Pa",size=15)
+ax[2].set_title(f"{str(round(pressure[79]))} Pa",size=15)
+
+plt.subplots_adjust(hspace=0.3)
 
 #figname = 'SiO_multibands_' + str(x_range[0]) + '-' + str(x_range[1]) + 'um.png'
 figname = 'SiO_multibands.png'
