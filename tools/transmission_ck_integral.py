@@ -1,6 +1,5 @@
 from netCDF4 import Dataset
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 
 def get_band_tau_profile(filename,h,layers):
@@ -81,4 +80,9 @@ plt.xlabel('wavenumber / $\mathrm{cm}^{-1}$',size=13)
 plt.ylabel('height / km',size=13)
 plt.tick_params(axis='both', which='major', labelsize=13)
 plt.savefig("/home/linfel/LavaPlanet/images/tau_profile.png",dpi=300)
-#np.savetxt("/home/linfel/LavaPlanet/outputs/tau.csv", tau_layers, delimiter=',')
+
+# flip the tau profile up side down, add a row of 0 at the first row, and write it in csv file
+tau_topdown = np.flipud(tau_all)
+row_of_zeros = np.zeros(tau_topdown.shape[1], dtype=tau_topdown.dtype)
+tau_topdown = np.vstack((row_of_zeros,tau_topdown))
+np.savetxt("/home/linfel/LavaPlanet/outputs/tau.csv", tau_topdown, delimiter=',')
