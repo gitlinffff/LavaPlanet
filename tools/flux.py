@@ -1,8 +1,8 @@
 #! python3
+import subprocess
 from numpy import array, pi, genfromtxt
 import numpy as np
 from pydisort import disort, get_legendre_coefficients, Radiant
-from numpy.testing import assert_allclose
 import os, unittest
 
 
@@ -18,19 +18,29 @@ class PyDisortTests(unittest.TestCase):
         ds = disort.from_file(self.toml_path)
         ds.set_header("01. test isotropic scattering")
 
+        # wavelength of bands (um)
+        bwv = { 0:[40.0,100.0],
+                1:[7.462686567164179,12.34567901234568],
+                2:[4.0,5.376344086021505],
+                3:[2.699784017278618,3.490401396160558],
+                4:[2.052123948286477,2.59000259000259],
+                5:[1.652892561983471,2.052123948286477],
+                6:[0.7,1.652892561983471]}
+        
         # set dimension
         ds.set_atmosphere_dimension(
             nlyr=79, nstr=16, nmom=16, nphase=16
-        ).set_intensity_dimension(nuphi=1, nutau=79, numu=6).finalize()
+        ).set_intensity_dimension(nuphi=1, nutau=80, numu=6).finalize()
 
         # get scattering moments
         pmom = get_legendre_coefficients(ds.get_nmom(), "isotropic")
 
         # set boundary conditions
-        ds.umu0 = 0.1
+        ds.umu0 = 1.0
         ds.phi0 = 0.0
         ds.albedo = 0.0
         ds.fluor = 0.0
+        ds.btemp = 10000.0
 
         # set output optical depth and polar angles
         umu = array([-1.0, -0.5, -0.1, 0.1, 0.5, 1.0])
@@ -38,17 +48,35 @@ class PyDisortTests(unittest.TestCase):
 
         # case No.1
         print("==== Case No.1 ====")
-        ds.fbeam = pi / ds.umu0
-        ds.fisot = 0.0
-        ssa = array([0.2,0.3,0.1,0.2])
         
+        # set stellar parameters to calculate irradiance
+        T_star = 5172.0           # Temperature of 55 Cancri A
+        r_star = 0.943 * 6.957e8  #radius of the star
+        d_star = 2309800000       # distance to the star
+        
+        ds.fisot = 0.0
+        ssa = array([0.0])
+        
+        list0 = []
         list1 = []
         list2 = []
         
-        for band in range(7):
-            utau = genfromtxt(self.tau_path, delimiter=',', usecols = band)
 
-            tau = utau
+        for band in range(1):
+            lmd_low = bwv[band][0]
+            lmd_up = bwv[band][1]
+
+            command = ['python', 'star_irradiance.py', str(T_star), str(r_star), str(d_star), str(lmd_low), str(lmd_up)]
+            irradiance, err = subprocess.Popen(command,
+                                        stdout = subprocess.PIPE,
+                                        stderr = subprocess.PIPE).communicate()
+            print(irradiance)
+            ds.fbeam = float(irradiance) / ds.umu0
+ 
+            tau = genfromtxt(self.tau_path, delimiter=',', usecols = band)
+            utau = np.insert(np.cumsum(tau),0,0.0)  # utau is any optical depth where you want results
+            #print(utau)
+            #exit()
             result = ds.run_with(
                 {
                     "tau": tau,
@@ -59,18 +87,19 @@ class PyDisortTests(unittest.TestCase):
                     "uphi": uphi,
                 }
             ).get_intensity()
-
-            self.assertEqual(result.shape, (1, 79, 6))
+            self.assertEqual(result.shape, (1, 80, 6))
 
             flux = ds.get_flux()[:, [Radiant.RFLDIR, Radiant.FLDN, Radiant.FLUP]]
+            
+            list0.append(flux[:,0])
             list1.append(flux[:,1])
             list2.append(flux[:,2])
 
-        flux_dn = np.vstack(list1)
-        flux_up = np.vstack(list2)
-        flux_dn = flux_dn.T
-        flux_up = flux_up.T
-
+        flux_dir = np.vstack(list0).T
+        flux_dn = np.vstack(list1).T
+        flux_up = np.vstack(list2).T
+        
+        np.savetxt("/home/linfel/LavaPlanet/outputs/flux_direct.csv", flux_dir, delimiter=',')
         np.savetxt("/home/linfel/LavaPlanet/outputs/flux_down.csv", flux_dn, delimiter=',')
         np.savetxt("/home/linfel/LavaPlanet/outputs/flux_up.csv", flux_up, delimiter=',')
 

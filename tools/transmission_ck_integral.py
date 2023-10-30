@@ -18,14 +18,14 @@ def get_band_tau_profile(filename,h,layers):
     tau_layers = np.array([])      # create an array to store tau of each layer
     trm_layers = np.array([])
 
-    for ilayer in range(layers-1,-1,-1):
+    for ilayer in range(layers):
         ck_k_raw = ck_dataset.variables['SiO'][:,ilayer,1]  # k at specific pressure and temperature
         ck_k = np.exp(ck_k_raw)/1000  # m2/mol
         T = Temperature[ilayer]       # K
         p = Pressure[ilayer]          # Pa
 
         rou = p/T/8.31446261815324    # mol/m3
-        d = h/(layers-1)*1000              # thickness of each layer (m) 
+        d = h/layers*1000              # thickness of each layer (m) 
         u = rou * d                   # u is constant within each layer
 
         # integrate over g space to calculate transmission
@@ -44,10 +44,10 @@ def get_band_tau_profile(filename,h,layers):
 
 
 h_atm = 100.0  # thickness of atmosphere
-layers = 80
-dh = h_atm/(layers-1)
+layers = 79
+dh = h_atm/layers
 dx = 1
-h, x = np.mgrid[0:100+dh:dh, 1:7+dx:dx]
+h, x = np.mgrid[dh:100+dh:dh, 1:7+dx:dx]
 
 tau_all = np.empty((layers, 0))
 trm_all = np.empty((layers, 0))
@@ -60,6 +60,13 @@ for filenum in list(['1','2','3','4','5','6','7']):
     tau_all = np.hstack((tau_all, band_tau[:, np.newaxis]))
     trm_all = np.hstack((trm_all, band_trm[:, np.newaxis]))
 
+# write the tau profile in csv file
+np.savetxt("/home/linfel/LavaPlanet/outputs/tau.csv", tau_all, delimiter=',')
+
+# flip the tau and transmission profile to make plot
+tau_all = np.flipud(tau_all)
+trm_all = np.flipud(trm_all)
+
 # plot the transmission profile
 plt.figure(figsize=(10, 6))
 heatmap = plt.pcolor(x,h,trm_all,cmap='viridis')
@@ -70,7 +77,6 @@ plt.ylabel('height / km',size=13)
 plt.tick_params(axis='both', which='major', labelsize=13)
 plt.savefig("/home/linfel/LavaPlanet/images/trm_profile.png",dpi=300)
 
-
 # plot the optical depth profile
 plt.figure(figsize=(10, 6))
 heatmap = plt.pcolor(x,h,tau_all,cmap='YlOrRd')
@@ -80,9 +86,3 @@ plt.xlabel('wavenumber / $\mathrm{cm}^{-1}$',size=13)
 plt.ylabel('height / km',size=13)
 plt.tick_params(axis='both', which='major', labelsize=13)
 plt.savefig("/home/linfel/LavaPlanet/images/tau_profile.png",dpi=300)
-
-# flip the tau profile up side down, add a row of 0 at the first row, and write it in csv file
-tau_topdown = np.flipud(tau_all)
-row_of_zeros = np.zeros(tau_topdown.shape[1], dtype=tau_topdown.dtype)
-tau_topdown = np.vstack((row_of_zeros,tau_topdown))
-np.savetxt("/home/linfel/LavaPlanet/outputs/tau.csv", tau_topdown, delimiter=',')

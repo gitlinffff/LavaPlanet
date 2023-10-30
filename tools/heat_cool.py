@@ -4,6 +4,7 @@ from netCDF4 import Dataset
 list_hrate = []    
 for band in range(7): 
     # read flux data
+    flux_dir = np.genfromtxt("/home/linfel/LavaPlanet/outputs/flux_direct.csv", delimiter=',',usecols = band)
     flux_down = np.genfromtxt("/home/linfel/LavaPlanet/outputs/flux_down.csv", delimiter=',',usecols = band)
     flux_up = np.genfromtxt("/home/linfel/LavaPlanet/outputs/flux_up.csv", delimiter=',',usecols = band)
 
@@ -28,7 +29,7 @@ for band in range(7):
     nlevel = len(flux_down)
 
     # calculate net flux
-    net_flux = flux_up - flux_down
+    net_flux = flux_up - flux_down - flux_dir
 
     # define parameters
     z_atm = 100.0              # height of atmosphere (km)
@@ -37,14 +38,16 @@ for band in range(7):
     R = 8.31446261815324       # gas constant (J/mol/K)
 
     heat_rate = np.array([], dtype=float)
-    for layer in range(nlevel-1):
+    for level in range(nlevel-1):
+        P = (Pressure[level]+Pressure[level+1])/2
+        T = (Temperature[level]+Temperature[level+1])/2
         # calculate density
-        rou = Pressure[layer]*molwt/R/Temperature[layer]
+        rou = P*molwt/R/T
         # locate the heat capacity at the specific temperature
-        cpidx = np.argmin(np.abs(tem_cp - Temperature[layer]))
+        cpidx = np.argmin(np.abs(tem_cp - T))
         cp = cp_value[cpidx] / molwt
         # calculate heating rate
-        dTdt = (net_flux[layer] - net_flux[layer+1]) / dz / 1000 / (-rou * cp)
+        dTdt = (net_flux[level] - net_flux[level+1]) / dz / 1000 / (-rou * cp)
 
         heat_rate = np.append(heat_rate, dTdt)
     
