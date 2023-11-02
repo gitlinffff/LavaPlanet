@@ -2,7 +2,7 @@ from netCDF4 import Dataset
 import numpy as np
 import matplotlib.pyplot as plt
 
-def get_band_tau_profile(filename,h,layers):
+def get_band_tau_profile(filename,h):
 
     # specify input file
     pwd = "/home/linfel/LavaPlanet/"
@@ -15,17 +15,19 @@ def get_band_tau_profile(filename,h,layers):
     Temperature = ck_dataset.variables['Temperature'][:]
     Pressure = ck_dataset.variables['Pressure'][:]
 
+    nlayers = len(Pressure)
+
     tau_layers = np.array([])      # create an array to store tau of each layer
     trm_layers = np.array([])
 
-    for ilayer in range(layers):
+    for ilayer in range(nlayers):
         ck_k_raw = ck_dataset.variables['SiO'][:,ilayer,1]  # k at specific pressure and temperature
         ck_k = np.exp(ck_k_raw)/1000  # m2/mol
         T = Temperature[ilayer]       # K
         p = Pressure[ilayer]          # Pa
 
         rou = p/T/8.31446261815324    # mol/m3
-        d = h/layers*1000              # thickness of each layer (m) 
+        d = h/nlayers*1000              # thickness of each layer (m) 
         u = rou * d                   # u is constant within each layer
 
         # integrate over g space to calculate transmission
@@ -40,25 +42,23 @@ def get_band_tau_profile(filename,h,layers):
         itau = -np.log(trm)
         tau_layers = np.append(tau_layers,itau)
     
-    return trm_layers, tau_layers
+    return trm_layers, tau_layers, nlayers
 
+# specify the thickness of atmosphere (km)
+h_atm = 100.0
 
-h_atm = 100.0  # thickness of atmosphere
-layers = 79
-dh = h_atm/layers
-dx = 1
-h, x = np.mgrid[dh:100+dh:dh, 1:7+dx:dx]
-
-tau_all = np.empty((layers, 0))
-trm_all = np.empty((layers, 0))
-
+tau_list = []
+trm_list = []
 # get the tau profile for each band and add to the 2D array
 for filenum in list(['1','2','3','4','5','6','7']):
 
     filename = "cktable.lava_planet-B"+filenum+".nc"
-    band_trm,band_tau = get_band_tau_profile(filename,h_atm,layers)
-    tau_all = np.hstack((tau_all, band_tau[:, np.newaxis]))
-    trm_all = np.hstack((trm_all, band_trm[:, np.newaxis]))
+    band_trm,band_tau,layers = get_band_tau_profile(filename,h_atm)
+    tau_list.append(band_tau)
+    trm_list.append(band_trm)
+
+tau_all = np.vstack(tau_list).T
+trm_all = np.vstack(trm_list).T
 
 # write the tau profile in csv file
 np.savetxt("/home/linfel/LavaPlanet/outputs/tau.csv", tau_all, delimiter=',')
@@ -67,9 +67,14 @@ np.savetxt("/home/linfel/LavaPlanet/outputs/tau.csv", tau_all, delimiter=',')
 tau_all = np.flipud(tau_all)
 trm_all = np.flipud(trm_all)
 
+# create the grid to plot
+dh = h_atm/layers
+dx = 1
+h_grid, x_grid = np.mgrid[(dh/2):(h_atm-dh/2)+dh:dh, 1:7+dx:dx]
+
 # plot the transmission profile
 plt.figure(figsize=(10, 6))
-heatmap = plt.pcolor(x,h,trm_all,cmap='viridis')
+heatmap = plt.pcolor(x_grid,h_grid,trm_all,cmap='viridis')
 cb = plt.colorbar(heatmap)
 cb.set_label('transmission',size=13)
 plt.xlabel('wavenumber / $\mathrm{cm}^{-1}$',size=13)
@@ -79,7 +84,7 @@ plt.savefig("/home/linfel/LavaPlanet/images/trm_profile.png",dpi=300)
 
 # plot the optical depth profile
 plt.figure(figsize=(10, 6))
-heatmap = plt.pcolor(x,h,tau_all,cmap='YlOrRd')
+heatmap = plt.pcolor(x_grid,h_grid,tau_all,cmap='YlOrRd')
 cb = plt.colorbar(heatmap)
 cb.set_label('optical depth',size=13)
 plt.xlabel('wavenumber / $\mathrm{cm}^{-1}$',size=13)

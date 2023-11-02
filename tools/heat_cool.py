@@ -23,7 +23,7 @@ for band in range(7):
 
     # check the number of levels
     assert len(flux_down) == len(flux_up), f"Number of levels in downward flux is not equal to number of levels in upward flux."
-    assert len(flux_down) == len(Pressure), f"Number of levels in flux is not equal to number of levels in pressure."
+    assert len(flux_down) == len(Pressure)+1, f"Number of levels in flux is not equal to number of layers in pressure plus 1."
 
     # number of levels
     nlevel = len(flux_down)
@@ -38,16 +38,16 @@ for band in range(7):
     R = 8.31446261815324       # gas constant (J/mol/K)
 
     heat_rate = np.array([], dtype=float)
-    for level in range(nlevel-1):
-        P = (Pressure[level]+Pressure[level+1])/2
-        T = (Temperature[level]+Temperature[level+1])/2
+    for layer in range(nlevel-1):
+        P = Pressure[layer]
+        T = Temperature[layer]
         # calculate density
         rou = P*molwt/R/T
         # locate the heat capacity at the specific temperature
         cpidx = np.argmin(np.abs(tem_cp - T))
         cp = cp_value[cpidx] / molwt
         # calculate heating rate
-        dTdt = (net_flux[level] - net_flux[level+1]) / dz / 1000 / (-rou * cp)
+        dTdt = (net_flux[layer] - net_flux[layer+1]) / dz / 1000 / (-rou * cp)
 
         heat_rate = np.append(heat_rate, dTdt)
     
