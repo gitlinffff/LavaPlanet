@@ -1,0 +1,23 @@
+category: visible
+
+opacity-sources:
+  - name: H2-H2-CIA
+    long-name: "Hydrogen-Hydrogen collisional absorption"
+    model: xiz
+
+  - name: H2-He-CIA
+    long-name: "Hydrogen-Helium collisional absorption"
+    model: xiz
+
+  - name: SiO
+    long-name: "SiO line absorption"
+    dependent-species: [vapor.SiO]
+
+bands: [B8]
+
+B8:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [14285.7, 25000.]
+  resolution: 0.1
+  opacity: [SiO]

@@ -8,7 +8,7 @@ h_atm = 100.0  # thickness of atmosphere
 nlayers = heat_rate_profile.shape[0]
 dh = h_atm/nlayers
 dx = 1
-h_grid, x_grid = np.mgrid[(dh/2):(h_atm-dh/2)+dh:dh, 1:7+dx:dx]
+h_grid, x_grid = np.mgrid[(dh/2):(h_atm-dh/2)+dh:dh, 1:8+dx:dx]
 
 
 plt.figure(figsize=(10, 6))

@@ -14,11 +14,9 @@ def PlanckFunction(lmd,T):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('T', type=float, help='Temperature of the star (K)')
-parser.add_argument('r', type=float, help='radius of the star (m)')
-parser.add_argument('d', type=float, help='distance to the star (m)')
 parser.add_argument('lmd_low', type=float, help='wavelength lower limit of integral of Planck Function (um)')
 parser.add_argument('lmd_up', type=float, help='wavelength upper limit of integral of Planck Function (um)')
 args = parser.parse_args()
 
 I = quad(PlanckFunction, args.lmd_low*1e-6, args.lmd_up*1e-6, args=args.T)
-print(I[0]*pi*args.r**2/args.d**2)
+print(I[0])

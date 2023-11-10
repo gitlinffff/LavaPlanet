@@ -54,4 +54,7 @@ for band in range(7):
     list_hrate.append(heat_rate)
 
 heat_rate_profile = np.vstack(list_hrate).T
+
+total_rate = np.sum(heat_rate_profile, axis=1)
+heat_rate_profile = np.column_stack((heat_rate_profile, total_rate))
 np.savetxt("/home/linfel/LavaPlanet/outputs/heat_rate.csv", heat_rate_profile, delimiter=',')
