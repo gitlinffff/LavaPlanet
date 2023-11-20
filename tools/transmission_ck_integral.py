@@ -47,12 +47,15 @@ def get_band_tau_profile(filename,h):
 # specify the thickness of atmosphere (km)
 h_atm = 100.0
 
+# number of bands
+nbands = 8
+
 tau_list = []
 trm_list = []
 # get the tau profile for each band and add to the 2D array
-for filenum in list(['1','2','3','4','5','6','7']):
+for filenum in list(range(1,nbands+1)):
 
-    filename = "cktable.lava_planet-B"+filenum+".nc"
+    filename = f"cktable.lava_planet-B{filenum}.nc"
     band_trm,band_tau,layers = get_band_tau_profile(filename,h_atm)
     tau_list.append(band_tau)
     trm_list.append(band_trm)
@@ -70,7 +73,7 @@ trm_all = np.flipud(trm_all)
 # create the grid to plot
 dh = h_atm/layers
 dx = 1
-h_grid, x_grid = np.mgrid[(dh/2):(h_atm-dh/2)+dh:dh, 1:7+dx:dx]
+h_grid, x_grid = np.mgrid[(dh/2):(h_atm-dh/2)+dh:dh, 1:nbands+dx:dx]
 
 # plot the transmission profile
 plt.figure(figsize=(10, 6))

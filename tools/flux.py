@@ -44,7 +44,6 @@ class PyDisortTests(unittest.TestCase):
             info['wmin'] = band.get_wavenumber_min()
             info['wmax'] = band.get_wavenumber_max()
             bands_info.append(info)
-
         # wavelength of bands (um)
         #bwv = { 0:[40.0,100.0],
         #        1:[7.462686567164179,12.34567901234568],
@@ -79,12 +78,12 @@ class PyDisortTests(unittest.TestCase):
         # set boundary conditions
         ds.umu0 = 1.0
         ds.phi0 = 0.0
-        ds.albedo = 0.37
+        ds.albedo = 0.0
         ds.fluor = 0.0
         ds.fisot = 0.0
-        ds.btemp = temp[-1]*0.5
-        ds.ttemp = temp[0]*1.86
-        ds.temis = 0.78
+        ds.btemp = temp[-1]
+        ds.ttemp = temp[0]
+        ds.temis = 0.0
 
         # set output polar angles
         umu = array([-1.0, -0.5, -0.1, 0.1, 0.5, 1.0])
@@ -116,9 +115,9 @@ class PyDisortTests(unittest.TestCase):
                                         stderr = subprocess.PIPE).communicate()
             
             # set beam flux (boundary condition)
-            #ds.fbeam = float(irradiance) / ds.umu0
-            ds.fbeam = 0.0
-            # set wavenumber range for thermal radiation
+            ds.fbeam = float(irradiance) / ds.umu0
+            #ds.fbeam = 0.0
+            # set wavenumber range for atmosphere emission
             ds.set_wavenumber_range_invcm(wmin=bands_info[band]['wmin'], wmax=bands_info[band]['wmax'])
            
             # set optical depth and output optical depth 

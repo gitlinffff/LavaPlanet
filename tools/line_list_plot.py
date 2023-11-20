@@ -4,11 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 pwd = "/home/linfel/LavaPlanet/"
-input_file = pwd + "co_HITRAN2020/lb_28Si-16O__SiOUVenIR__100-333__296K.par"
+input_file = pwd + "co_HITRAN2020/lb_28Si-16O__SiOUVenIR__14285-25000__296K.par"
 
 # set wavenumber range
-wvn_lower = 100.0
-wvn_upper = 250.0
+wvn_lower = 14285.0
+wvn_upper = 25000.0
 
 # set intensity threshold above which a data is considered as an effective line
 inten_thres = 1e-110

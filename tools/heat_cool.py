@@ -1,8 +1,11 @@
 import numpy as np
 from netCDF4 import Dataset
 
+# number of bands
+nbands = 8
+
 list_hrate = []    
-for band in range(7): 
+for band in range(nbands): 
     # read flux data
     flux_dir = np.genfromtxt("/home/linfel/LavaPlanet/outputs/flux_direct.csv", delimiter=',',usecols = band)
     flux_down = np.genfromtxt("/home/linfel/LavaPlanet/outputs/flux_down.csv", delimiter=',',usecols = band)

@@ -13,7 +13,8 @@ fig, ax = plt.subplots(3, 1, figsize=(10, 18))
 avo = 6.02214076e23
 
 
-for i in range(7):
+nbands = 8
+for i in range(nbands):
 
     # specify input file 
     filename = "kcoeff.lava_planet-B" + str(i+1) + ".nc"

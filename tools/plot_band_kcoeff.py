@@ -3,12 +3,12 @@
 
 """plot absorption cross-section """
 
-from netCDF4 import Dataset,num2date
+from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import numpy as np
 
 # specify input file 
-filename = "kcoeff.lava_planet-B1.nc"
+filename = "kcoeff.lava_planet-B8.nc"
 pwd = "/home/linfel/LavaPlanet/"
 kcoeff_fpath = pwd + filename
 
@@ -46,7 +46,5 @@ for a in ax:
 
 
 figname = 'SiO_' + filename[-5:-3] +  '.png'
-plt.savefig(pwd + figname,dpi=300)
+plt.savefig(pwd + 'images/' + figname,dpi=300)
 plt.close()
-
-#plt.title('Spotter vs. WAVEWATCH Ⅲ',fontsize = 14)
