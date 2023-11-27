@@ -20,7 +20,7 @@ class PyDisortTests(unittest.TestCase):
         assert os.path.exists(self.toml_path), f"{self.toml_path} does not exist."
         assert os.path.exists(self.tau_path), f"{self.tau_path} does not exist."
         assert os.path.exists(self.atm_path), f"{self.atm_path} does not exist."
-        assert os.path.exists(self.stir_path), f"{self.self.stir_path} does not exist."
+        assert os.path.exists(self.stir_path), f"{self.stir_path} does not exist."
 
     def test_isotropic_scattering(self):
         ds = disort.from_file(self.toml_path)
@@ -44,14 +44,6 @@ class PyDisortTests(unittest.TestCase):
             info['wmin'] = band.get_wavenumber_min()
             info['wmax'] = band.get_wavenumber_max()
             bands_info.append(info)
-        # wavelength of bands (um)
-        #bwv = { 0:[40.0,100.0],
-        #        1:[7.462686567164179,12.34567901234568],
-        #        2:[4.0,5.376344086021505],
-        #        3:[2.699784017278618,3.490401396160558],
-        #        4:[2.052123948286477,2.59000259000259],
-        #        5:[1.652892561983471,2.052123948286477],
-        #        6:[0.7,1.652892561983471]}
         
         # get number of layers
         nlayers = len(genfromtxt(self.tau_path, delimiter=',', usecols = 0))

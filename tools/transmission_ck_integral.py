@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 def get_band_tau_profile(filename,h):
 
     # specify input file
-    pwd = "/home/linfel/LavaPlanet/"
+    pwd = "/home/linfel/LavaPlanet/2800isothermal/"
     cktable_fpath = pwd + filename
     print(f"# working on {cktable_fpath}")
 
