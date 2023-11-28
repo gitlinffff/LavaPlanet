@@ -27,8 +27,8 @@ for ilayer in range(nlayers):
     T = Temperature[ilayer]                         # K
     p = Pressure[ilayer]                            # Pa
     rou = p/T/8.31446261815324                      # mol/m3
-    d = args.hatm/nlayers*1000                      # thickness of each layer (m) 
-    u = rou * d                                     # u is constant within each layer
+    dh = args.hatm/nlayers*1000                     # thickness of each layer (m) 
+    u = rou * dh                                    # u is constant within each layer
     
     trm_lyr = np.array([])         # create an array to store transmissions for one specific layer under each temperature
     for itemp in range(ntemp):
