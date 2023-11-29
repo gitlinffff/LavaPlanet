@@ -12,6 +12,7 @@ import argparse
 parser = argparse.ArgumentParser()
 #parser.add_argument('bdnum', type=str, help='band #')
 parser.add_argument('wdir', type=str, help='working directory')
+parser.add_argument('nbands', type=int, help='number of bands')
 parser.add_argument('bdinfo', type=str, help='spectral bands info  .inp file')
 parser.add_argument('toml', type=str, help='toml file for running pydisort')
 #parser.add_argument('opd', type=str, help='optical depth file')
@@ -40,9 +41,9 @@ band_infile.close()
 init_index_map(pin)
 rad = radiation()
 rad.load_all_radiation_bands(pin)
-nbands = rad.get_num_bands()
+assert args.nbands == rad.get_num_bands(), "number of bands does not match in flux calculation"
 bands_info = []
-for i in range(nbands):
+for i in range(args.nbands):
     info = {}
     band = rad.get_band(i)
     info['name'] = band.get_name()
@@ -99,7 +100,7 @@ ssa = array([0.0])
 
 tot_net_flux = np.zeros(nlayers+1)    # create a zero array to record total net flux
 # calculate net flux of each band
-for bdnum in range(1,nbands+1):
+for bdnum in range(1,args.nbands+1):
 
 
     # get irradiance at the top of the planet atmosphere

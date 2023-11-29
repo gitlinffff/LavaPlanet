@@ -54,5 +54,5 @@ tau_array = np.vstack([rel_temp + Temperature[0], tau_array])
 
 # save the tau and trm array
 cwd = os.getcwd()
-np.savetxt(f"{cwd}/rdsm/outputs/trm_B{args.bdnum}.csv", trm_array, delimiter=',')
-np.savetxt(f"{cwd}/rdsm/outputs/tau_B{args.bdnum}.csv", tau_array, delimiter=',')
+np.savetxt(f"{cwd}/outputs/trm_B{args.bdnum}.csv", trm_array, delimiter=',')
+np.savetxt(f"{cwd}/outputs/tau_B{args.bdnum}.csv", tau_array, delimiter=',')

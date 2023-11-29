@@ -1,6 +1,6 @@
 import subprocess
 from netCDF4 import Dataset
-from numpy import genfromtxt, savetxt, vstack
+import numpy as np
 
 # working directory
 wdir = '/home/linfel/LavaPlanet'
@@ -28,22 +28,29 @@ hatm = 100.0
 
 # iteration parameters for atmospheric heating and cooling
 tstep = 1.0    # second
-iterations = 20
+iterations = 120
+
+# print running headings
+print(f"# number of bands: {nbands}")
+print(f"# atmospheric species: {spcs}")
+print(f"# initial atmospheric thickness: {hatm:.1f} km")
+print(f"# time step: {tstep:.1f} s")
+print(f"# iterations: {iterations}")
 
 # construct the array of optical depths for each layer and each temperature
 for bdnum in range(1,nbands+1):
+    print(f"constructing array of optical depths for band {bdnum} ...")
     cktable = f"{wdir}/2800isothermal/cktable.lava_planet-B{bdnum}.nc"
     command = ['python', run_opd, spcs, str(bdnum), cktable, str(hatm)]
     out, err = subprocess.Popen(command,
                             stdout = subprocess.PIPE,
                             stderr = subprocess.PIPE).communicate()
 
-
 # record the initial atmospheric temperature profile
 ck_dataset = Dataset(cktable,'r')
 temp_trk = ck_dataset.variables['Temperature'][:]
-savetxt(f"{wdir}/rdsm/outputs/atmtemp.csv", temp_trk, delimiter=',')
-
+np.savetxt(f"{wdir}/rdsm/outputs/atmtemp.csv", temp_trk, delimiter=',')
+#temp_trk = np.genfromtxt(f"{wdir}/rdsm/outputs/temp_trk.csv", delimiter=',').T
 
 
 for i in range(iterations):
@@ -58,7 +65,7 @@ for i in range(iterations):
 
     # calculate flux
     atemp = f"{wdir}/rdsm/outputs/atmtemp.csv"
-    command = ['python', run_flx, wdir, bdinfo, toml, atemp]
+    command = ['python', run_flx, wdir, str(nbands), bdinfo, toml, atemp]
     out, err = subprocess.Popen(command,
                                 stdout = subprocess.PIPE,
                                 stderr = subprocess.PIPE).communicate()
@@ -74,12 +81,13 @@ for i in range(iterations):
                                 stderr = subprocess.PIPE).communicate()
 
     # obtain new atmospheric temperature after one step of evolution
-    hcrate = genfromtxt(f"{wdir}/rdsm/outputs/heat_rate.csv", delimiter=',', usecols = -1)
-    cur_temp = genfromtxt(atemp, delimiter=',', usecols = -1)
+    hcrate = np.genfromtxt(f"{wdir}/rdsm/outputs/heat_rate.csv", delimiter=',', usecols = -1)
+    cur_temp = np.genfromtxt(atemp, delimiter=',', usecols = -1)
     nxt_temp = cur_temp + tstep * hcrate
-    savetxt(atemp, nxt_temp, delimiter=',')
+    np.savetxt(atemp, nxt_temp, delimiter=',')
+    assert not np.any(nxt_temp < 0), "invalid negative temperature occurred." 
 
-    temp_trk = vstack((temp_trk, nxt_temp)) 
+    temp_trk = np.vstack((temp_trk, nxt_temp)) 
 
 
     # percentage progress
@@ -89,4 +97,4 @@ for i in range(iterations):
 
 temp_trk = temp_trk.T
 
-savetxt(f"{wdir}/rdsm/outputs/temp_trk.csv", temp_trk, delimiter=',')
+np.savetxt(f"{wdir}/rdsm/outputs/temp_trk.csv", temp_trk, delimiter=',')
