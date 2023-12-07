@@ -15,7 +15,8 @@ h_grid, t_grid = np.mgrid[(dh/2):(h_atm-dh/2)+dh:dh, 0:(ncol-1)+dt:dt]
 
 
 plt.figure(figsize=(10, 6))
-heatmap = plt.pcolor(t_grid,h_grid,temp_trk,cmap='RdBu_r', vmin=-np.max(np.abs(temp_trk)), vmax=np.max(np.abs(temp_trk)))
+#heatmap = plt.pcolor(t_grid,h_grid,temp_trk,cmap='RdBu_r', vmin=-np.max(np.abs(temp_trk)), vmax=np.max(np.abs(temp_trk)))
+heatmap = plt.pcolor(t_grid,h_grid,temp_trk,cmap='hot_r')
 cb = plt.colorbar(heatmap)
 cb.set_label('temperature (K)',size=13)
 plt.xlabel('time / $s$',size=13)

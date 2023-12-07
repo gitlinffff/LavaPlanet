@@ -16,6 +16,9 @@ toml        =  "/home/linfel/pydisort/build/bin/sio_isotropic_thermal.toml"
 cptable     = f"{wdir}/ExoMol_to_HITRAN/28Si-16O/28Si-16O__SiOUVenIR.cp"
 atm         =  "/home/linfel/canoe/data/lava_SiO_atm_isothermal.txt"
 
+
+
+
 # number of bands
 nbands = 8
 
@@ -28,7 +31,7 @@ hatm = 100.0
 
 # iteration parameters for atmospheric heating and cooling
 tstep = 1.0    # second
-iterations = 120
+iterations = 1
 
 # print running headings
 print(f"# number of bands: {nbands}")
@@ -40,7 +43,7 @@ print(f"# iterations: {iterations}")
 # construct the array of optical depths for each layer and each temperature
 for bdnum in range(1,nbands+1):
     print(f"constructing array of optical depths for band {bdnum} ...")
-    cktable = f"{wdir}/2800isothermal/cktable.lava_planet-B{bdnum}.nc"
+    cktable = f"{wdir}/cktable.lava_planet-B{bdnum}.nc"
     command = ['python', run_opd, spcs, str(bdnum), cktable, str(hatm)]
     out, err = subprocess.Popen(command,
                             stdout = subprocess.PIPE,
@@ -86,9 +89,7 @@ for i in range(iterations):
     nxt_temp = cur_temp + tstep * hcrate
     np.savetxt(atemp, nxt_temp, delimiter=',')
     assert not np.any(nxt_temp < 0), "invalid negative temperature occurred." 
-
     temp_trk = np.vstack((temp_trk, nxt_temp)) 
-
 
     # percentage progress
     progress = (i+1) / iterations * 100
@@ -96,5 +97,21 @@ for i in range(iterations):
 
 
 temp_trk = temp_trk.T
-
 np.savetxt(f"{wdir}/rdsm/outputs/temp_trk.csv", temp_trk, delimiter=',')
+
+
+# final balanced atmospheric profile output
+atm_profile = np.genfromtxt(atm, delimiter='\t',  skip_header=1)
+nlayers = atm_profile.shape[0]
+tem0 = atm_profile[:,3]
+tem1 = np.genfromtxt(f"{wdir}/rdsm/outputs/temp_trk.csv", delimiter=',',usecols = -1)
+tem1 = np.flipud(tem1)
+lythk0 = np.full(nlayers,hatm/nlayers)
+lythk1 = lythk0 * tem1 / tem0
+
+hgtctr = np.array([])
+for i in range(nlayers):
+    ihgt = np.sum(lythk1[:i]) + lythk1[i]/2
+    hgtctr = np.append(hgtctr,ihgt)
+atm_profile = np.column_stack((atm_profile[:,0], hgtctr, atm_profile[:,2], tem1, atm_profile[:,4]))
+np.savetxt("/home/linfel/LavaPlanet/rdsm/outputs/balance_atm.txt", atm_profile, delimiter='\t', fmt=['%d','%.4f','%.9f','%.1f','%.1f'], header='IDX\tHGT\tPRE\tTEM\tSiO', comments='')
